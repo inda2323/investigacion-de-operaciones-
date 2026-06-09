@@ -1,33 +1,64 @@
 import pulp
 
-# 1. Definir el problema (Maximización)
-model = pulp.LpProblem("VideoGame_Assets_Optimization", pulp.LpMaximize)
 
-# 2. Variables de decisión
-# x1 = Modelos 3D de Personajes
-# x2 = Modelos 3D de Escenarios
 
-x1 = pulp.LpVariable("Personajes", lowBound=0, cat='Integer')
-x2 = pulp.LpVariable("Escenarios", lowBound=0, cat='Integer')
+model = pulp.LpProblem(
+    "Optimizacion_Cluster_DevOps",
+    pulp.LpMaximize
+)
 
-# 3. Función Objetivo
-# Maximizar el valor total del proyecto
 
-model += 80 * x1 + 60 * x2, "Valor_Total"
+x1 = pulp.LpVariable(
+    "Backend",
+    lowBound=0,
+    upBound=6,     
+    cat='Integer'
+)
 
-# 4. Restricciones
+x2 = pulp.LpVariable(
+    "Data_Worker",
+    lowBound=0,
+    upBound=7,     
+    cat='Integer'
+)
 
-# Tiempo máximo de renderizado (GPU)
-model += 2 * x1 + x2 <= 12, "Renderizado"
 
-# Memoria máxima disponible (VRAM)
-model += x1 + 2 * x2 <= 14, "VRAM"
+model += 300 * x1 + 250 * x2, "Rendimiento_Total"
 
-# 5. Resolver
+
+model += 2 * x1 + 1 * x2 <= 16, "Memoria_RAM"
+
+model += 1 * x1 + 2 * x2 <= 17, "Almacenamiento_SSD"
+
+model += x1 <= 6, "Limite_Backend"
+
+model += x2 <= 7, "Limite_Data_Workers"
 model.solve()
 
-# 6. Resultados
-print("Estado:", pulp.LpStatus[model.status])
-print("Personajes:", x1.varValue)
-print("Escenarios:", x2.varValue)
-print("Valor Total del Proyecto: $", pulp.value(model.objective), "USD")
+
+
+print("Estado de la solución:")
+print(pulp.LpStatus[model.status])
+
+print("\nCantidad óptima de contenedores:")
+print("Backend =", int(x1.varValue))
+print("Data Worker =", int(x2.varValue))
+
+print("\nRendimiento máximo por hora:")
+print("$", pulp.value(model.objective), "USD")
+
+
+
+print("\nUso de recursos:")
+
+print(
+    "RAM utilizada =",
+    2 * x1.varValue + 1 * x2.varValue,
+    "GB de 16 GB"
+)
+
+print(
+    "SSD utilizado =",
+    1 * x1.varValue + 2 * x2.varValue,
+    "TB de 17 TB"
+)
